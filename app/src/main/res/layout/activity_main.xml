@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.ibrahimenescifti.firebaseconnection.MainActivity">
+
+    <LinearLayout
+        android:layout_width="368dp"
+        android:layout_height="495dp"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp"
+        tools:paddingTop="30dp">
+
+        <TextView
+            android:id="@+id/textViewAd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="İsim" />
+
+        <EditText
+            android:id="@+id/editTextAd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+        <TextView
+            android:id="@+id/textViewSoyad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Soyisim" />
+
+        <EditText
+            android:id="@+id/editTextSoyad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+        <TextView
+            android:id="@+id/textViewOkulNo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Okul No" />
+
+        <EditText
+            android:id="@+id/editTextOkulNo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sınıf" />
+
+        <EditText
+            android:id="@+id/editTextSınıf"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+        <TextView
+            android:id="@+id/textViewSube"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Şube" />
+
+        <EditText
+            android:id="@+id/editTextSube"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+        <Button
+            android:id="@+id/buttonGiris"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Giriş" />
+
+        <Button
+            android:id="@+id/buttonGetir"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Getir" />
+
+        <Button
+            android:id="@+id/buttonQR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="QR" />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>
