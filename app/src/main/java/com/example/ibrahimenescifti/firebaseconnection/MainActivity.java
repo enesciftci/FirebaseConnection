@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraManager;
+import android.nfc.NdefMessage;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -27,10 +28,24 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -47,135 +62,81 @@ import java.util.Map;
 import io.opencensus.common.Clock;
 
 public class MainActivity extends AppCompatActivity {
-
-    Calendar calendar=Calendar.getInstance();
-    Calendar calendar1=Calendar.getInstance();
-    int ders=1;
-    private String _ad, _soyad, _okulNo, _sinif, _sube, _girisTarihi,_imei,_girisSaati,_girisYapilanSinifNo,_ders;
+    public final static String AD="com.example.ibrahimenescifti.firebaseconnection.AD";
+    public final static String SOYAD="com.example.ibrahimenescifti.firebaseconnection.SOYAD";
+    public final static String OKULNO="com.example.ibrahimenescifti.firebaseconnection.OKULNO";
+    public final static String SUBE="com.example.ibrahimenescifti.firebaseconnection.SUBE";
+    public final static String IMEI="com.example.ibrahimenescifti.firebaseconnection.IMEI";
+    public final static String SINIF="com.example.ibrahimenescifti.firebaseconnection.SINIF";
+    private String _ad, _soyad, _okulNo, _sinif, _sube;
     EditText ad, soyad, okulNo, sube, sinif;
-    TextView label;
-    String IMEINumber,GirisYapilanSinifNo;
-    Button girisButonu, getirButonu,qrButonu;
-    List<Student> studentList = new ArrayList<Student>();
-    Map<String, String> studentMap = new HashMap<String, String>();
-    FirebaseFirestore database = FirebaseFirestore.getInstance();
-    FirebaseFirestore oku = FirebaseFirestore.getInstance();
-final Activity activity=this;
+    String IMEINumber;
+    Button girisButonu;
+  List<String> bilgiler=new ArrayList<>();
     TelephonyManager telephonyManager;
-    Student student = new Student(_ad, _soyad, _sinif, _sube, _okulNo, _girisTarihi,_imei,_girisSaati,_girisYapilanSinifNo,_ders);
+   // Student student = new Student(_ad, _soyad, _sinif, _sube, _okulNo, _girisTarihi,_imei,_girisSaati,_girisYapilanSinifNo,_ders);
     private static final int PERMISSION_REQUEST_CODE = 1;
-    IntentIntegrator integrator ;
+View v;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-qrButonu=(Button)findViewById(R.id.buttonQR);
-qrButonu.setOnClickListener(new View.OnClickListener() {
-    @Override
-    public void onClick(View v) {
-       integrator=new IntentIntegrator(activity);
-       integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
-       integrator.setPrompt("QR Kodu Tarayın");
-       integrator.setCameraId(0);
-       integrator.setBeepEnabled(true);
-       integrator.setBarcodeImageEnabled(false);
-       integrator.initiateScan();
-    }
-});
 
+        try {
+            if (bilgileriOku() == true) {
+                bilgileriOku();
+            }
+        else {
         girisButonu = (Button) findViewById(R.id.buttonGiris);
         girisButonu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                label = (TextView) findViewById(R.id.textViewAd);
                 ad = (EditText) findViewById(R.id.editTextAd);
                 soyad = (EditText) findViewById(R.id.editTextSoyad);
                 okulNo = findViewById(R.id.editTextOkulNo);
                 sube = findViewById(R.id.editTextSube);
                 sinif = findViewById(R.id.editTextSınıf);
                 if (kontrol(ad) || kontrol(soyad) || kontrol(okulNo) || kontrol(sinif) || kontrol(sube)) {
-                    try
-                    {
-                    basicWrite();
-                    }
-                    catch (Exception e)
-                    {
-                       e.printStackTrace();
+                    try {
+                        _ad = ad.getText().toString().trim().toUpperCase();
+                        System.out.println(_ad);
+                        _soyad = soyad.getText().toString().trim().toUpperCase();
+                        _okulNo = okulNo.getText().toString().trim();
+                        _sinif = sinif.getText().toString().trim();
+                        _sube = sube.getText().toString().trim().toUpperCase();
+                         bilgiler.add(ad.getText().toString());
+                         bilgiler.add(_soyad);
+                         bilgiler.add(_okulNo);
+                         bilgiler.add(_sinif);
+                         bilgiler.add(_sube);
+                        imeiOku();
+                        VeriGonder(v);
+                        bilgileriYaz(_ad);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
 
                 }
+
             }
         });
-
-        getirButonu = (Button) findViewById(R.id.buttonGetir);
+    }}
+catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         if ((ContextCompat.checkSelfPermission(MainActivity.this,Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED)) {
 
-            // Should we show an explanation?
             if ((ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,Manifest.permission.READ_PHONE_STATE))){
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
             } else {
-
-                // No explanation needed, we can request the permission.
-
                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_PHONE_STATE}, PERMISSION_REQUEST_CODE);
-
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
             }
         }
 
-        getirButonu.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-
-                imeiOku();
-            //    System.out.println(IMEINumber);
-                oku.collection("Sınıflar").document("11").collection("A").document(IMEINumber).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-
-                            String name = task.getResult().getString("ad");
-                            String surname = task.getResult().getString("soyad");
-                            String schnumber = task.getResult().getString("okulNo");
-                            String field = task.getResult().getString("sube");
-                            String regdate = task.getResult().getString("girisTarihi");
-                            String imei=task.getResult().getString("imei");
-
-                            System.out.println(name+" "+" "+surname +" "+schnumber+ " "+field+" "+regdate);
-                            System.out.println(imeiOku());
-                        }
-                    }
-                });
-            }
-        });
 
     }
-@Override
-public void onActivityResult(int requestCode, int resultCode, Intent data)
-{
-    IntentResult result=IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
-    if(result!=null){
-        if(result.getContents()==null)
-        {
-            System.out.println("Sonuç Bulunamadı");
-            //label.setText("Sonuç Bulunamadı Tekrar Deneyin");
-        }
-        else
-        {
-            System.out.println(result.getContents());
-            GirisYapilanSinifNo=result.getContents().toString();
-           // label.setText("abc "+result.getContents());
-        }
-    }
-}
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -217,22 +178,56 @@ public void onActivityResult(int requestCode, int resultCode, Intent data)
             FileOutputStream fileOutputStream = openFileOutput("imeiNumber", Context.MODE_PRIVATE);
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return;
             }
             fileOutputStream.write(tm.getDeviceId().getBytes());
-            System.out.println("imei yazıldı"+tm.getDeviceId());
         fileOutputStream.close();
     }catch (Exception e)
     {
         e.printStackTrace();
     }
 }
+void bilgileriYaz(String ad) throws IOException, JSONException {
+try{
+  FileOutputStream fileOutputStream=openFileOutput("studentInformation",Context.MODE_PRIVATE);
+  BufferedWriter bufferedWriter=new BufferedWriter(new OutputStreamWriter(fileOutputStream));
+    for (String b:bilgiler) {
+
+      bufferedWriter.write(b);
+      bufferedWriter.newLine();
+  }
+bufferedWriter.close();
+  fileOutputStream.close();
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+}
+boolean bilgileriOku() throws FileNotFoundException {
+boolean durum=false;
+
+    try {
+
+        FileInputStream fileInputStream=openFileInput("studentInformation");
+
+        InputStreamReader ınputStreamReader=new InputStreamReader(fileInputStream);
+        BufferedReader bufferedReader=new BufferedReader(ınputStreamReader);
+
+      _ad=bufferedReader.readLine();
+     _soyad=bufferedReader.readLine();
+     _okulNo=bufferedReader.readLine();
+     _sinif=bufferedReader.readLine();
+     _sube=bufferedReader.readLine();
+     VeriGonder(v);
+        durum=true;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        durum=false;
+    }
+    return durum;
+}
+
 String imeiOku()
 {
     try {
@@ -259,96 +254,21 @@ String imeiOku()
             return true;
         }
     }
-Date dakikaHesapla(int dakika)
+public void VeriGonder(View v)
 {
-    Date date1=new Date();
-    calendar.add(Calendar.MINUTE,dakika);
-    date1=calendar.getTime();
-    return date1;
-}
-Date girisSaati(int dakika)
-{
-    Date date2;
-    calendar1.add(Calendar.MINUTE,dakika);
-   // calendar1.set(Calendar.HOUR,);
-    date2=calendar1.getTime();
-    return date2;
+    imeiOku();
+    Intent intent=new Intent(this,MainPage.class);
+    intent.putExtra(AD,_ad);
+    intent.putExtra(SOYAD,_soyad);
+    intent.putExtra(OKULNO,_okulNo);
+    intent.putExtra(SINIF,_sinif);
+    intent.putExtra(SUBE,_sube);
+    intent.putExtra(IMEI,IMEINumber);
+    startActivity(intent);
+    finish();
 }
 
-    public void basicWrite() throws ParseException {
 
-imeiOku();
-try{
-        System.out.println("Basicwrite için imei okundu");
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-        DateFormat dateFormat1=new SimpleDateFormat("dd/MM/yyyy");
-
-    if(girisSaati(0).getTime()<=dakikaHesapla(40).getTime())
-    {
-        System.out.println("1.ders");
-    }
-    else if(girisSaati(50).getTime()<=dakikaHesapla(90).getTime() )
-    {
-        System.out.println("2.ders");
-    }
-    else if(girisSaati(100).getTime()<=dakikaHesapla(140).getTime())
-    {
-        System.out.println("Şuan 3. ders");
-
-    }
-    else if(girisSaati(150).getTime()<=dakikaHesapla(190).getTime())
-    {
-        System.out.println("Şuan 4. ders");
-
-    }
-    else if(girisSaati(190).getTime()<=dakikaHesapla(230).getTime())
-    {
-        System.out.println("Şuan 5. ders");
-    }
-    Date date = new Date();
-        student.setAd(ad.getText().toString().toUpperCase());
-        student.setSoyad(soyad.getText().toString().toUpperCase());
-        student.setOkulNo(okulNo.getText().toString().toUpperCase());
-        student.setSube(sube.getText().toString().toUpperCase());
-        student.setDers("1");
-        student.setSinif(sinif.getText().toString().toUpperCase());
-        student.setGirisYapilanSinifNo(GirisYapilanSinifNo);
-        String a=dateFormat1.format(date).toString();
-        a=a.replace('/',' ');
-        String strWithSpaceTabNewline = a;
-        String formattedStr01 = strWithSpaceTabNewline.replaceAll("\\s"," ");
-        student.setGirisTarihi(formattedStr01);
-        student.setIMEI(IMEINumber.toString());
-        student.setGirisSaati(dateFormat.format(date).toString());
-        _ad = student.getAd();
-        _soyad = student.getSoyad();
-        _okulNo = student.getOkulNo();
-        _sube = student.getSube();
-        _ders=student.getDers();
-        _sinif = student.getSinif();
-_girisYapilanSinifNo=student.getGirisYapilanSinifNo();
-        _girisTarihi = student.getGirisTarihi().toString();
-        _girisSaati=student.getGirisSaati().toString();
-        _imei=student.getIMEI();
-        studentMap.put("Ad", _ad);
-        studentMap.put("Soyad", _soyad);
-        studentMap.put("OkulNo", _okulNo);
-        studentMap.put("Sube", _sube);
-        studentMap.put("Sinif", _sinif);
-        studentMap.put("GirisTarihi", _girisTarihi);
-        studentMap.put("IMEI",_imei);
-        studentMap.put(_girisSaati,dateFormat1.format(date));
-        studentMap.put(ders+".Ders",_ders);
-        studentMap.put("girisYapilanSinifNo",_girisYapilanSinifNo);
-
-        database.collection("Sınıflar").document(_sinif).collection(_sube).document(_girisTarihi).collection("ogrenciler").document(_imei).set(student);// Burada yapı
-        // koleksiyon/döküman/koleksiyon/döküman olarak gidiyor sonuç olarak her öğrenci bir döküman haline geliyor.
-    }
-    catch (Exception e)
-    {
-       throw e;
-    }
-    }
 
 
     }

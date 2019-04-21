@@ -84,16 +84,5 @@
             android:layout_height="wrap_content"
             android:text="Giriş" />
 
-        <Button
-            android:id="@+id/buttonGetir"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Getir" />
-
-        <Button
-            android:id="@+id/buttonQR"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="QR" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
