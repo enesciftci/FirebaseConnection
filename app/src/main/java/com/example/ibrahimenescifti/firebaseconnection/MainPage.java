@@ -259,32 +259,7 @@ Activity activity=this;
                 System.out.println("Ders dışı");
             }
 
-    /*  else if((suan>baslangicSaati+12000000)&&suan<(baslangicSaati+23))
-              {
-          System.out.println("Ders dışı");
-      }   */
         }
-
-    /*  else if ((suan>baslangicSaati+12000000+3600000)&&suan<(baslangicSaati+2400000+12000000+3600000)) {
-           dersSaati="6";
-         System.out.println(dersSaati+". Ders");
-        }
-    else if ((suan>baslangicSaati+15000000+3600000)&&suan<(baslangicSaati+2400000+15000000+3600000)) {
-
-        dersSaati="7";
-         System.out.println(dersSaati+". Ders");
-        }
-     else if ((suan>baslangicSaati+18000000+3600000)&&suan<(baslangicSaati+2400000+18000000+3600000)) {
-           dersSaati="8";
-         System.out.println(dersSaati+". Ders");
-        }
-      else if ((suan>baslangicSaati+21000000+3600000)&&suan<(baslangicSaati+2400000+21000000+3600000)) {
-           dersSaati="9";
-         System.out.println(dersSaati+". Ders");
-        }
-      else if ((suan>baslangicSaati+24000000+3600000)&&suan<(baslangicSaati+2400000+24000000+3600000)) {
-           dersSaati="9";
-         System.out.println(dersSaati+". Ders");
-        }*/return dersSaati;
+        return dersSaati;
     }
 }

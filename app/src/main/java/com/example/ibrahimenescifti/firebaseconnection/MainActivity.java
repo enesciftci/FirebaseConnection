@@ -181,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
             }
             fileOutputStream.write(tm.getDeviceId().getBytes());
             fileOutputStream.close();
+            System.out.println("imei yazıldı");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -197,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
             }
             bufferedWriter.close();
             fileOutputStream.close();
+            System.out.println("Verileri yazıldı");
         } catch (Exception e) {
             e.printStackTrace();
         }
