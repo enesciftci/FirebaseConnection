@@ -41,7 +41,7 @@
             android:id="@+id/textView8"
             android:layout_width="match_parent"
             android:layout_height="84dp"
-            android:text="Giriş Yapmak İstediğiniz Aynı Sınıf İse Direk Giriş Tuşuna Basabilirsiniz..."
+            android:text="İlk Giriş İşlemi Yapıldığı İçin Kullanıcı Bilgileri Sorulmayacaktır.Aynı Bilgilerle Kayıt İşleminiz Yapılacaktır."
             android:textSize="18sp" />
 
         <Button

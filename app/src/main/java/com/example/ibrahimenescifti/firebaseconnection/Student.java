@@ -5,14 +5,16 @@ package com.example.ibrahimenescifti.firebaseconnection;
  */
 
 public class Student {
-    private String Ad="a";
-    private String Soyad="a";
-    private String Sube="a";
-    private String Sinif="a";
-    private String OkulNo="a";
-    private String GirisTarihi="01.01.1999";
-    private String IMEI="00000";
-    private String GirisSaati="00:00";
+    private String Ad="";
+    private String Soyad="";
+    private String Sube="";
+    private String Sinif="";
+    private String OkulNo="";
+    private String GirisTarihi="";
+    private String IMEI="";
+    private String GirisSaati="";
+    private String Ders="";
+
 
     public String getGirisYapilanSinifNo() {
         return GirisYapilanSinifNo;
@@ -32,7 +34,7 @@ public class Student {
         Ders = ders;
     }
 
-    private String Ders="0";
+
 
 
 

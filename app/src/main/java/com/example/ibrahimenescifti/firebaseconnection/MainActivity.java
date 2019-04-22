@@ -62,21 +62,21 @@ import java.util.Map;
 import io.opencensus.common.Clock;
 
 public class MainActivity extends AppCompatActivity {
-    public final static String AD="com.example.ibrahimenescifti.firebaseconnection.AD";
-    public final static String SOYAD="com.example.ibrahimenescifti.firebaseconnection.SOYAD";
-    public final static String OKULNO="com.example.ibrahimenescifti.firebaseconnection.OKULNO";
-    public final static String SUBE="com.example.ibrahimenescifti.firebaseconnection.SUBE";
-    public final static String IMEI="com.example.ibrahimenescifti.firebaseconnection.IMEI";
-    public final static String SINIF="com.example.ibrahimenescifti.firebaseconnection.SINIF";
+    public final static String AD = "com.example.ibrahimenescifti.firebaseconnection.AD";
+    public final static String SOYAD = "com.example.ibrahimenescifti.firebaseconnection.SOYAD";
+    public final static String OKULNO = "com.example.ibrahimenescifti.firebaseconnection.OKULNO";
+    public final static String SUBE = "com.example.ibrahimenescifti.firebaseconnection.SUBE";
+    public final static String IMEI = "com.example.ibrahimenescifti.firebaseconnection.IMEI";
+    public final static String SINIF = "com.example.ibrahimenescifti.firebaseconnection.SINIF";
     private String _ad, _soyad, _okulNo, _sinif, _sube;
     EditText ad, soyad, okulNo, sube, sinif;
     String IMEINumber;
     Button girisButonu;
-  List<String> bilgiler=new ArrayList<>();
+    List<String> bilgiler = new ArrayList<>();
     TelephonyManager telephonyManager;
-   // Student student = new Student(_ad, _soyad, _sinif, _sube, _okulNo, _girisTarihi,_imei,_girisSaati,_girisYapilanSinifNo,_ders);
     private static final int PERMISSION_REQUEST_CODE = 1;
-View v;
+    View v;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,50 +85,49 @@ View v;
         try {
             if (bilgileriOku() == true) {
                 bilgileriOku();
-            }
-        else {
-        girisButonu = (Button) findViewById(R.id.buttonGiris);
-        girisButonu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            } else {
+                girisButonu = (Button) findViewById(R.id.buttonGiris);
+                girisButonu.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
-                ad = (EditText) findViewById(R.id.editTextAd);
-                soyad = (EditText) findViewById(R.id.editTextSoyad);
-                okulNo = findViewById(R.id.editTextOkulNo);
-                sube = findViewById(R.id.editTextSube);
-                sinif = findViewById(R.id.editTextSınıf);
-                if (kontrol(ad) || kontrol(soyad) || kontrol(okulNo) || kontrol(sinif) || kontrol(sube)) {
-                    try {
-                        _ad = ad.getText().toString().trim().toUpperCase();
-                        System.out.println(_ad);
-                        _soyad = soyad.getText().toString().trim().toUpperCase();
-                        _okulNo = okulNo.getText().toString().trim();
-                        _sinif = sinif.getText().toString().trim();
-                        _sube = sube.getText().toString().trim().toUpperCase();
-                         bilgiler.add(ad.getText().toString());
-                         bilgiler.add(_soyad);
-                         bilgiler.add(_okulNo);
-                         bilgiler.add(_sinif);
-                         bilgiler.add(_sube);
-                        imeiOku();
-                        VeriGonder(v);
-                        bilgileriYaz(_ad);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        ad = (EditText) findViewById(R.id.editTextAd);
+                        soyad = (EditText) findViewById(R.id.editTextSoyad);
+                        okulNo = findViewById(R.id.editTextOkulNo);
+                        sube = findViewById(R.id.editTextSube);
+                        sinif = findViewById(R.id.editTextSınıf);
+                        if (kontrol(ad) || kontrol(soyad) || kontrol(okulNo) || kontrol(sinif) || kontrol(sube)) {
+                            try {
+                                _ad = ad.getText().toString().trim().toUpperCase();
+                                System.out.println(_ad);
+                                _soyad = soyad.getText().toString().trim().toUpperCase();
+                                _okulNo = okulNo.getText().toString().trim();
+                                _sinif = sinif.getText().toString().trim();
+                                _sube = sube.getText().toString().trim().toUpperCase();
+                                bilgiler.add(ad.getText().toString());
+                                bilgiler.add(_soyad);
+                                bilgiler.add(_okulNo);
+                                bilgiler.add(_sinif);
+                                bilgiler.add(_sube);
+                                imeiOku();
+                                VeriGonder(v);
+                                bilgileriYaz();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+
                     }
-
-                }
-
+                });
             }
-        });
-    }}
-catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        if ((ContextCompat.checkSelfPermission(MainActivity.this,Manifest.permission.READ_PHONE_STATE)!= PackageManager.PERMISSION_GRANTED)) {
+        if ((ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED)) {
 
-            if ((ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,Manifest.permission.READ_PHONE_STATE))){
+            if ((ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.READ_PHONE_STATE))) {
             } else {
                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_PHONE_STATE}, PERMISSION_REQUEST_CODE);
             }
@@ -181,70 +180,69 @@ catch (FileNotFoundException e) {
                 return;
             }
             fileOutputStream.write(tm.getDeviceId().getBytes());
-        fileOutputStream.close();
-    }catch (Exception e)
-    {
-        e.printStackTrace();
-    }
-}
-void bilgileriYaz(String ad) throws IOException, JSONException {
-try{
-  FileOutputStream fileOutputStream=openFileOutput("studentInformation",Context.MODE_PRIVATE);
-  BufferedWriter bufferedWriter=new BufferedWriter(new OutputStreamWriter(fileOutputStream));
-    for (String b:bilgiler) {
-
-      bufferedWriter.write(b);
-      bufferedWriter.newLine();
-  }
-bufferedWriter.close();
-  fileOutputStream.close();
-        }catch (Exception e)
-        {
+            fileOutputStream.close();
+        } catch (Exception e) {
             e.printStackTrace();
         }
-}
-boolean bilgileriOku() throws FileNotFoundException {
-boolean durum=false;
-
-    try {
-
-        FileInputStream fileInputStream=openFileInput("studentInformation");
-
-        InputStreamReader ınputStreamReader=new InputStreamReader(fileInputStream);
-        BufferedReader bufferedReader=new BufferedReader(ınputStreamReader);
-
-      _ad=bufferedReader.readLine();
-     _soyad=bufferedReader.readLine();
-     _okulNo=bufferedReader.readLine();
-     _sinif=bufferedReader.readLine();
-     _sube=bufferedReader.readLine();
-     VeriGonder(v);
-        durum=true;
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        durum=false;
     }
-    return durum;
-}
 
-String imeiOku()
-{
-    try {
-        FileInputStream fileInputStream=openFileInput("imeiNumber");
+    void bilgileriYaz() throws IOException, JSONException {
+        try {
+            FileOutputStream fileOutputStream = openFileOutput("studentInformation", Context.MODE_PRIVATE);
+            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
+            for (String b : bilgiler) {
 
-        InputStreamReader ınputStreamReader=new InputStreamReader(fileInputStream);
-        BufferedReader bufferedReader=new BufferedReader(ınputStreamReader);
-       IMEINumber=bufferedReader.readLine();
-        System.out.println("İmei okundu"+IMEINumber);
-
-
-    }catch (Exception e)
-    {
-        e.printStackTrace();
+                bufferedWriter.write(b);
+                bufferedWriter.newLine();
+            }
+            bufferedWriter.close();
+            fileOutputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-   return IMEINumber;
-}
+
+    boolean bilgileriOku() throws FileNotFoundException {
+        boolean durum = false;
+
+        try {
+
+            FileInputStream fileInputStream = openFileInput("studentInformation");
+
+            InputStreamReader ınputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(ınputStreamReader);
+
+            _ad = bufferedReader.readLine();
+            _soyad = bufferedReader.readLine();
+            _okulNo = bufferedReader.readLine();
+            _sinif = bufferedReader.readLine();
+            _sube = bufferedReader.readLine();
+            VeriGonder(v);
+            durum = true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            durum = false;
+        }
+        return durum;
+    }
+
+    String imeiOku() {
+        try {
+            FileInputStream fileInputStream = openFileInput("imeiNumber");
+
+            InputStreamReader ınputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(ınputStreamReader);
+            IMEINumber = bufferedReader.readLine();
+            System.out.println("İmei okundu" + IMEINumber);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return IMEINumber;
+    }
+
     boolean kontrol(EditText editText)//Text alan kontrolü
     {
         if (TextUtils.isEmpty(editText.getText())) {
@@ -254,22 +252,17 @@ String imeiOku()
             return true;
         }
     }
-public void VeriGonder(View v)
-{
-    imeiOku();
-    Intent intent=new Intent(this,MainPage.class);
-    intent.putExtra(AD,_ad);
-    intent.putExtra(SOYAD,_soyad);
-    intent.putExtra(OKULNO,_okulNo);
-    intent.putExtra(SINIF,_sinif);
-    intent.putExtra(SUBE,_sube);
-    intent.putExtra(IMEI,IMEINumber);
-    startActivity(intent);
-    finish();
-}
 
-
-
-
+    public void VeriGonder(View v) {
+        imeiOku();
+        Intent intent = new Intent(this, MainPage.class);
+        intent.putExtra(AD, _ad);
+        intent.putExtra(SOYAD, _soyad);
+        intent.putExtra(OKULNO, _okulNo);
+        intent.putExtra(SINIF, _sinif);
+        intent.putExtra(SUBE, _sube);
+        intent.putExtra(IMEI, IMEINumber);
+        startActivity(intent);
+        finish();
     }
-
+}

@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.example.ibrahimenescifti.firebaseconnection"
-        multiDexEnabled false
+        multiDexEnabled true
         minSdkVersion 23
         targetSdkVersion 26
         versionCode 1
