@@ -1,18 +1,29 @@
 package com.example.ibrahimenescifti.firebaseconnection;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.nfc.FormatException;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.print.PrintAttributes;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,47 +34,66 @@ import java.util.Map;
 
 public class MainPage extends AppCompatActivity {
     Calendar calendar=Calendar.getInstance();
-Button btnGiris;
+Button btnGiris,btnOku;
 TextView sinifNo;
+    TextView textViewInfo;
 Activity activity=this;
     IntentIntegrator integrator ;
-   String GirisYapilanSinifNo;
     FirebaseFirestore database = FirebaseFirestore.getInstance();
     Map<String, String> studentMap = new HashMap<String, String>();
     private String _ad, _soyad, _okulNo, _sinif, _sube, _girisTarihi,_imei,_girisSaati,_girisYapilanSinifNo,_dersAraligi;
-    private String ad,soyad,okulNo,sinif,sube,girisTarihi,imei,girisSaati,girisYapilanSinifNo,ders;
+    private String ad,soyad,okulNo,sinif,sube,girisTarihi,imei,girisSaati,girisYapilanSinifNo,derslik,girisYontemi;
     Student student = new Student(_ad, _soyad, _sinif, _sube, _okulNo, _girisTarihi,_imei,_girisSaati,_girisYapilanSinifNo,_dersAraligi);
     DateFormat saatFormat = new SimpleDateFormat("HH:mm");
     DateFormat tarihFormat=new SimpleDateFormat("dd/MM/yyyy");
     Date date=new Date();
     int tarih;
     String formattedStr01;
+    Context context=this;
+    NfcAdapter nfcAdapter;
+TextView sonSinif;
+
+    Map<String,String>NFCTags=new HashMap<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
-        Intent intent=getIntent();
+        sonSinif=(TextView)findViewById(R.id.textViewSonSinif);
+Intent intent=getIntent();
         ad=intent.getStringExtra(MainActivity.AD);
         soyad=intent.getStringExtra(MainActivity.SOYAD);
         sube=intent.getStringExtra(MainActivity.SUBE);
         okulNo=intent.getStringExtra(MainActivity.OKULNO);
         imei=intent.getStringExtra(MainActivity.IMEI);
         sinif=intent.getStringExtra(MainActivity.SINIF);
-
-
-        integrator=new IntentIntegrator(activity);
-        integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
-        integrator.setPrompt("QR Kodu Tarayın");
-        integrator.setCameraId(0);
-        integrator.setBeepEnabled(true);
-        integrator.setBarcodeImageEnabled(false);
-        integrator.initiateScan();
+        derslik=intent.getStringExtra(MainActivity.DERSLIK);
+        girisYontemi=intent.getStringExtra(MainActivity.GIRISYONTEMI);
+        if(girisYontemi.equals("0")) {
+            NFCTags.put(derslik, "274");
+        }
+        System.out.println("Giris Yöntemi " +girisYontemi);
+if(girisYontemi.equals("1")) {
+    integrator = new IntentIntegrator(activity);
+    integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
+    integrator.setPrompt("QR Kodu Tarayın");
+    integrator.setCameraId(0);
+    integrator.setBeepEnabled(true);
+    integrator.setBarcodeImageEnabled(false);
+    integrator.initiateScan();
+}
         btnGiris=(Button)findViewById(R.id.buttonSinifaGirisYap);
         btnGiris.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 try {
-                    basicWrite();
+                    if(_girisYapilanSinifNo!="") {
+
+                        basicWrite();
+                    }
+                    else {
+                       Toast.makeText(context,"Lütfen NFC'yi Okutun",Toast.LENGTH_SHORT).show();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -72,9 +102,13 @@ Activity activity=this;
 
             }
         });
-    }@Override
+    }
+
+
+   @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
+
         IntentResult result=IntentIntegrator.parseActivityResult(requestCode,resultCode,data);
         if(result!=null){
             if(result.getContents()==null)
@@ -85,14 +119,12 @@ Activity activity=this;
             else
             {
                 System.out.println(result.getContents());
-                GirisYapilanSinifNo=result.getContents().toString();
-                _girisYapilanSinifNo=GirisYapilanSinifNo;
-
-                student.setGirisTarihi(formattedStr01);
+                girisYapilanSinifNo=result.getContents().toString();
 
             }
         }
     }
+
     public void basicWrite() throws ParseException {
 
 
@@ -103,7 +135,13 @@ Activity activity=this;
             student.setSube(sube.toString().toUpperCase());
             student.setDers(dersAraligi()); // Ders saati tespiti sırasında dataseti dolduruyoruz bu nedenle vazgeçildi.
             student.setSinif(sinif.toString().toUpperCase());
-            student.setGirisYapilanSinifNo(GirisYapilanSinifNo);
+            if(girisYontemi.equals("0")) {
+                student.setGirisYapilanSinifNo(NFCTags.get(derslik));
+            }
+            else
+            {
+                student.setGirisYapilanSinifNo(girisYapilanSinifNo);
+            }
             student.setIMEI(imei.toString());
             student.setGirisSaati(saatFormat.format(date).toString());
             student.setGirisTarihi(tarihFormat.format(date).toString());
@@ -189,8 +227,14 @@ Activity activity=this;
             a=a.replace('/',' ');
             String strWithSpaceTabNewline = a;
             formattedStr01 = strWithSpaceTabNewline.replaceAll("\\s"," ");
-            database.collection("Sınıflar").document(_sinif).collection(_sube).document(formattedStr01).collection("ogrenciler").document(_imei).set(studentMap);
+            database.collection("Sınıflar").document(_sinif).collection(_sube).document(formattedStr01).collection("ogrenciler").document(_imei).set(studentMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    sonSinif.setText(_girisYapilanSinifNo);
+                }
+            });
 
+            System.out.println("Giriş Yapılan Sınıf: "+_girisYapilanSinifNo);
         }
         catch (Exception e)
         {

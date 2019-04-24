@@ -2,12 +2,15 @@ package com.example.ibrahimenescifti.firebaseconnection;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraManager;
 import android.nfc.NdefMessage;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -19,7 +22,9 @@ import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -68,29 +73,59 @@ public class MainActivity extends AppCompatActivity {
     public final static String SUBE = "com.example.ibrahimenescifti.firebaseconnection.SUBE";
     public final static String IMEI = "com.example.ibrahimenescifti.firebaseconnection.IMEI";
     public final static String SINIF = "com.example.ibrahimenescifti.firebaseconnection.SINIF";
-    private String _ad, _soyad, _okulNo, _sinif, _sube;
+    public final static String DERSLIK="com.example.ibrahimenescifti.firebaseconnection.DERSLIK";
+    public final static String GIRISYONTEMI="com.example.ibrahimenescifti.firebaseconnection.GIRISYONTEMI";
+    private String _ad, _soyad, _okulNo, _sinif, _sube,_derslik,_girisYontemi;
     EditText ad, soyad, okulNo, sube, sinif;
     String IMEINumber;
     Button girisButonu;
     List<String> bilgiler = new ArrayList<>();
     TelephonyManager telephonyManager;
+    NfcAdapter nfcAdapter;
+    RadioButton nfc,karekod;
     private static final int PERMISSION_REQUEST_CODE = 1;
     View v;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        karekod=(RadioButton)findViewById(R.id.radioKarekod);
+        nfc=(RadioButton)findViewById(R.id.radioNFC);
         try {
-            if (bilgileriOku() == true) {
+            nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+            if(nfcAdapter == null){
+                Toast.makeText(MainActivity.this,
+                        "NFC NOT supported on this devices!",
+                        Toast.LENGTH_LONG).show();
+                finish();
+            }else if(!nfcAdapter.isEnabled()){
+                Toast.makeText(MainActivity.this,
+                        "NFC NOT Enabled!",
+                        Toast.LENGTH_LONG).show();
+                finish();
+            }
+
+
+        if (bilgileriOku() == true) {
+            if(_girisYontemi.equals("0"))
+                _derslik=NFCOku();
+            imeiOku();
                 bilgileriOku();
             } else {
+
                 girisButonu = (Button) findViewById(R.id.buttonGiris);
                 girisButonu.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                if(nfc.isChecked()) {
+                    _girisYontemi = "0";
+                }
+                else if (karekod.isChecked()) {
+                    _girisYontemi = "1";
+                }
+            else {
+                    _girisYontemi = "1";
+                }
                         ad = (EditText) findViewById(R.id.editTextAd);
                         soyad = (EditText) findViewById(R.id.editTextSoyad);
                         okulNo = findViewById(R.id.editTextOkulNo);
@@ -104,12 +139,21 @@ public class MainActivity extends AppCompatActivity {
                                 _okulNo = okulNo.getText().toString().trim();
                                 _sinif = sinif.getText().toString().trim();
                                 _sube = sube.getText().toString().trim().toUpperCase();
+
                                 bilgiler.add(ad.getText().toString());
                                 bilgiler.add(_soyad);
                                 bilgiler.add(_okulNo);
                                 bilgiler.add(_sinif);
                                 bilgiler.add(_sube);
+                                bilgiler.add(_girisYontemi);
                                 imeiOku();
+                                if(bilgiler.size()>=3) {
+                              //  Toast.makeText(MainActivity.this, "NFC Okutun", Toast.LENGTH_SHORT).show();
+                           //  MainActivity.super.onResume();
+                                }
+                                if(_girisYontemi=="0") {
+                                    _derslik = NFCOku();
+                                }
                                 VeriGonder(v);
                                 bilgileriYaz();
                             } catch (Exception e) {
@@ -135,7 +179,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -192,9 +235,13 @@ public class MainActivity extends AppCompatActivity {
             FileOutputStream fileOutputStream = openFileOutput("studentInformation", Context.MODE_PRIVATE);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
             for (String b : bilgiler) {
-
-                bufferedWriter.write(b);
-                bufferedWriter.newLine();
+if(!b.isEmpty()) {
+    bufferedWriter.write(b);
+    bufferedWriter.newLine();
+}
+else {
+    Toast.makeText(this,"Bilgileri Yaz Metodu Çalıştırılamadı",Toast.LENGTH_SHORT);
+}
             }
             bufferedWriter.close();
             fileOutputStream.close();
@@ -208,7 +255,6 @@ public class MainActivity extends AppCompatActivity {
         boolean durum = false;
 
         try {
-
             FileInputStream fileInputStream = openFileInput("studentInformation");
 
             InputStreamReader ınputStreamReader = new InputStreamReader(fileInputStream);
@@ -219,8 +265,12 @@ public class MainActivity extends AppCompatActivity {
             _okulNo = bufferedReader.readLine();
             _sinif = bufferedReader.readLine();
             _sube = bufferedReader.readLine();
-            VeriGonder(v);
-            durum = true;
+            _girisYontemi=bufferedReader.readLine();
+            imeiOku();
+            if(!_ad.isEmpty()&&!_soyad.isEmpty()&&!_okulNo.isEmpty()&&!_sinif.isEmpty()&&!_sube.isEmpty()&&!imeiOku().isEmpty()) {
+                VeriGonder(v);
+                durum = true;
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -264,7 +314,46 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(SINIF, _sinif);
         intent.putExtra(SUBE, _sube);
         intent.putExtra(IMEI, IMEINumber);
+        intent.putExtra(DERSLIK,_derslik);
+        intent.putExtra(GIRISYONTEMI,_girisYontemi);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+   protected void onResume() {
+        super.onResume();
+       NFCOku();
+
+    }
+   String NFCOku()
+    {
+        String tagInfo="";
+        Intent intent = getIntent();
+        String action = intent.getAction();
+
+        if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
+            Toast.makeText(this,
+                    "onResume() - ACTION_TAG_DISCOVERED",
+                    Toast.LENGTH_SHORT).show();
+
+            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            if(tag == null){
+                System.out.println("tag == null");
+            }else{
+                byte[] tagId = tag.getId();
+                for(int i=0; i<tagId.length; i++){
+                    tagInfo += Integer.toHexString(tagId[i] & 0xFF);
+                }
+                System.out.println(tagInfo);
+
+            }
+        }else{
+
+            Toast.makeText(this,
+                    "onResume() : " + action,
+                    Toast.LENGTH_SHORT).show();
+        }
+        return tagInfo;
     }
 }
