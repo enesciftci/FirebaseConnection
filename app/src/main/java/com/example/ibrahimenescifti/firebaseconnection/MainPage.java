@@ -1,19 +1,14 @@
 package com.example.ibrahimenescifti.firebaseconnection;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.nfc.FormatException;
 import android.nfc.NfcAdapter;
-import android.nfc.Tag;
-import android.print.PrintAttributes;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,7 +18,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,7 +36,7 @@ Activity activity=this;
     FirebaseFirestore database = FirebaseFirestore.getInstance();
     Map<String, String> studentMap = new HashMap<String, String>();
     private String _ad, _soyad, _okulNo, _sinif, _sube, _girisTarihi,_imei,_girisSaati,_girisYapilanSinifNo,_dersAraligi;
-    private String ad,soyad,okulNo,sinif,sube,girisTarihi,imei,girisSaati,girisYapilanSinifNo,derslik,girisYontemi;
+    private String ad,soyad,okulNo,sinif,sube,girisTarihi,imei,girisSaati,girisYapilanSinifNo, nfcEtiketi,girisYontemi;
     Student student = new Student(_ad, _soyad, _sinif, _sube, _okulNo, _girisTarihi,_imei,_girisSaati,_girisYapilanSinifNo,_dersAraligi);
     DateFormat saatFormat = new SimpleDateFormat("HH:mm");
     DateFormat tarihFormat=new SimpleDateFormat("dd/MM/yyyy");
@@ -66,10 +60,10 @@ Intent intent=getIntent();
         okulNo=intent.getStringExtra(MainActivity.OKULNO);
         imei=intent.getStringExtra(MainActivity.IMEI);
         sinif=intent.getStringExtra(MainActivity.SINIF);
-        derslik=intent.getStringExtra(MainActivity.DERSLIK);
+        nfcEtiketi =intent.getStringExtra(MainActivity.NFCETIKETI);
         girisYontemi=intent.getStringExtra(MainActivity.GIRISYONTEMI);
         if(girisYontemi.equals("0")) {
-            NFCTags.put(derslik, "274");
+            NFCTags.put(nfcEtiketi, "274");
         }
         System.out.println("Giris Yöntemi " +girisYontemi);
 if(girisYontemi.equals("1")) {
@@ -136,7 +130,7 @@ if(girisYontemi.equals("1")) {
             student.setDers(dersAraligi()); // Ders saati tespiti sırasında dataseti dolduruyoruz bu nedenle vazgeçildi.
             student.setSinif(sinif.toString().toUpperCase());
             if(girisYontemi.equals("0")) {
-                student.setGirisYapilanSinifNo(NFCTags.get(derslik));
+                student.setGirisYapilanSinifNo(NFCTags.get(nfcEtiketi));
             }
             else
             {

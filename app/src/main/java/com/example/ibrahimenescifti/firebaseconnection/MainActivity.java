@@ -1,70 +1,35 @@
 package com.example.ibrahimenescifti.firebaseconnection;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.hardware.camera2.CameraManager;
-import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
-
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.lang.reflect.Array;
-import java.sql.Time;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import io.opencensus.common.Clock;
 
 public class MainActivity extends AppCompatActivity {
     public final static String AD = "com.example.ibrahimenescifti.firebaseconnection.AD";
@@ -73,9 +38,9 @@ public class MainActivity extends AppCompatActivity {
     public final static String SUBE = "com.example.ibrahimenescifti.firebaseconnection.SUBE";
     public final static String IMEI = "com.example.ibrahimenescifti.firebaseconnection.IMEI";
     public final static String SINIF = "com.example.ibrahimenescifti.firebaseconnection.SINIF";
-    public final static String DERSLIK="com.example.ibrahimenescifti.firebaseconnection.DERSLIK";
+    public final static String NFCETIKETI="com.example.ibrahimenescifti.firebaseconnection.NFCETIKETI";
     public final static String GIRISYONTEMI="com.example.ibrahimenescifti.firebaseconnection.GIRISYONTEMI";
-    private String _ad, _soyad, _okulNo, _sinif, _sube,_derslik,_girisYontemi;
+    private String _ad, _soyad, _okulNo, _sinif, _sube, nfcEtiketi,_girisYontemi;
     EditText ad, soyad, okulNo, sube, sinif;
     String IMEINumber;
     Button girisButonu;
@@ -93,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         nfc=(RadioButton)findViewById(R.id.radioNFC);
         try {
             nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-            if(nfcAdapter == null){
+           if(nfcAdapter == null){
                 Toast.makeText(MainActivity.this,
                         "NFC NOT supported on this devices!",
                         Toast.LENGTH_LONG).show();
@@ -108,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (bilgileriOku() == true) {
             if(_girisYontemi.equals("0"))
-                _derslik=NFCOku();
+                nfcEtiketi =NFCOku();
             imeiOku();
                 bilgileriOku();
             } else {
@@ -152,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                            //  MainActivity.super.onResume();
                                 }
                                 if(_girisYontemi=="0") {
-                                    _derslik = NFCOku();
+                                    nfcEtiketi = NFCOku();
                                 }
                                 VeriGonder(v);
                                 bilgileriYaz();
@@ -235,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
             FileOutputStream fileOutputStream = openFileOutput("studentInformation", Context.MODE_PRIVATE);
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
             for (String b : bilgiler) {
-if(!b.isEmpty()) {
+if(b!=null) {
     bufferedWriter.write(b);
     bufferedWriter.newLine();
 }
@@ -314,7 +279,7 @@ else {
         intent.putExtra(SINIF, _sinif);
         intent.putExtra(SUBE, _sube);
         intent.putExtra(IMEI, IMEINumber);
-        intent.putExtra(DERSLIK,_derslik);
+        intent.putExtra(NFCETIKETI, nfcEtiketi);
         intent.putExtra(GIRISYONTEMI,_girisYontemi);
         startActivity(intent);
         finish();
