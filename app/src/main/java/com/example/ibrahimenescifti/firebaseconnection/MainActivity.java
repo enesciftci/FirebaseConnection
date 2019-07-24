@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         nfc=(RadioButton)findViewById(R.id.radioNFC);
         try {
             nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-           if(nfcAdapter == null){
+           if(nfcAdapter != null){
                 Toast.makeText(MainActivity.this,
                         "NFC NOT supported on this devices!",
                         Toast.LENGTH_LONG).show();
